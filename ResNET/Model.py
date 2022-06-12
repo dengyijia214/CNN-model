@@ -66,7 +66,7 @@ class Bottleneck(nn.Module):
   
 class ResNet(nn.Module):
   
-  def __init__(self, block, block_num, num_classes = 1000, include_top = True):
+  def __init__(self, block, blocks_num, num_classes = 1000, include_top = True):
     #这里的block是上面我们定义的残差结构，18和34用的是basicblock, 50等用的就是bottlenet
     #block_num指定的是我们用的残差模块的个数
     #这里的一千是因为Resnet在这里参加的是imagenet，这里是一个一千分类的问题，可以改成你的分类问题的种类
@@ -79,5 +79,32 @@ class ResNet(nn.Module):
     self.bn1 = nn.BatchNorm2d(self.in_channel)
     self.relu = nn.ReLU(inplace=True)
     self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-    self.layer1 = self.
+    self.layer1 = self._make_layer(block, 64, blocks_num[0])
+    self.layer2 = self._make_layer(block, 128, blocks_num[1], stride = 2)
+    self.layer3 = self._make_layer(block, 256, blocks_num[2], stride = 2)
+    self.layer3 = self._make_layer(block, 256, blocks_num[2], stride = 2)
+    if self.include
+    
+    
+  def _make_layer(self, block, channel, block_num, stride = 1):
+    #block就是在最上面我们定义的两种block结构
+    #channel对应残差结构中某一层卷积核的层数，比如第一层中Res18和Res34就是2，Res50等就是3
+    #block_num表示该层中包含多少个残差结构
+    downsample = None
+    if stride != 1 or self.in_channel != channel = channel * block.expansion:
+      downsample = nn.Sequential(
+        nn.Conv2d(self.in_channel, channel * block.expansion, kernel_size=1, stride=stride, bias=False)
+        nn.BatchNorm2d(channel * block.expansion))
+      
+    layers = []
+    layers.append(block(self.in_channel, channel, downsample=downsample, stride=stride))
+    self.in_channel = channel * block.expansion
+    
+    for _ in range(1, block_num):
+      layers.append(block(self.in_channel, channel))
+      
+    return nn.Sequential(*layers)
+    
+    
+    
     
