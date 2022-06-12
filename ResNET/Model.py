@@ -83,12 +83,19 @@ class ResNet(nn.Module):
     self.layer2 = self._make_layer(block, 128, blocks_num[1], stride = 2)
     self.layer3 = self._make_layer(block, 256, blocks_num[2], stride = 2)
     self.layer3 = self._make_layer(block, 256, blocks_num[2], stride = 2)
-    if self.include
+    if self.include_top:
+      self.avepool = nn.AdaptiveAvePool2d((1,1))
+      #自适应平均池化，无论输入的特征矩阵的高和宽是什么，得到的特征矩阵的高和宽都是1
+      self.fc = nn.Linear(512 * block.expansion, num_classes)
+      
+    for m in modules():
+      if isinstance(m, nn.Conv2d):
+        nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity=
     
     
   def _make_layer(self, block, channel, block_num, stride = 1):
     #block就是在最上面我们定义的两种block结构
-    #channel对应残差结构中某一层卷积核的层数，比如第一层中Res18和Res34就是2，Res50等就是3
+    #channel对应残差结构中某一层中第一个卷积的卷积核个数，比如第一层中Res18和Res34就是2，Res50等就是3
     #block_num表示该层中包含多少个残差结构
     downsample = None
     if stride != 1 or self.in_channel != channel = channel * block.expansion:
@@ -104,7 +111,3 @@ class ResNet(nn.Module):
       layers.append(block(self.in_channel, channel))
       
     return nn.Sequential(*layers)
-    
-    
-    
-    
